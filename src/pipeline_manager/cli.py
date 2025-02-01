@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import List, Literal, TypeAlias
 
+import arrow
 import textual
 from gitlab.base import RESTObject, RESTObjectList
 from textual.app import App, ComposeResult
@@ -132,9 +133,10 @@ class PipelineListItem(Widget):
                     yield Label(
                         f"{self.Icons.ELAPSED.value} {self.pipeline.created_at}"
                     )
-                    yield Label(
-                        f"{self.Icons.CALENDAR.value} {self.pipeline.updated_at}"
-                    )
+
+                    date = arrow.get(self.pipeline.updated_at)
+                    display_date = arrow.Arrow.humanize(date)
+                    yield Label(f"{self.Icons.CALENDAR.value} {display_date}")
 
                 with Container(classes="pipeline-line"):
                     yield Label("Update .gitlab-ci.yml file")
