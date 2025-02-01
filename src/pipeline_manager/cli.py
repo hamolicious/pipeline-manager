@@ -129,10 +129,14 @@ class PipelineListItem(Widget):
         with Vertical():
             with Horizontal():
                 with Container(classes="pipeline-line"):
+                    elapsed = str(
+                        arrow.get(self.pipeline.updated_at)
+                        - arrow.get(self.pipeline.created_at)
+                    ).split(".")[0]
+
+                    # display_elapsed = arrow.Arrow.humanize(elapsed)
                     yield Label(self.pipeline_pill(self.pipeline.status.upper()))
-                    yield Label(
-                        f"{self.Icons.ELAPSED.value} {self.pipeline.created_at}"
-                    )
+                    yield Label(f"{self.Icons.ELAPSED.value} {elapsed}")
 
                     date = arrow.get(self.pipeline.updated_at)
                     display_date = arrow.Arrow.humanize(date)
