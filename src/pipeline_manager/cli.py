@@ -1,12 +1,14 @@
+import time
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Literal, TypeAlias
+from typing import List, TypeAlias
 
 import arrow
-import textual
 from gitlab.base import RESTObject, RESTObjectList
+from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import Center, Container, Horizontal, Vertical, VerticalScroll
+from textual.events import Timer
 from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Label, Rule
@@ -54,6 +56,7 @@ class PipelineListItem(Widget):
     """
 
     class Text(Enum):
+        CREATED = "Created"
         PENDING = "Pending"
         RUNNING = "Running"
         SUCCESS = "Passed"
@@ -63,6 +66,7 @@ class PipelineListItem(Widget):
         MANUAL = "Manual"
 
     class Colors(Enum):
+        CREATED = "#333238"
         PENDING = "#6F3A0C"
         RUNNING = "#154584"
         SUCCESS = "#0C522C"
@@ -74,6 +78,7 @@ class PipelineListItem(Widget):
         TEXT = "#AAAAAA"
 
     class Icons(Enum):
+        CREATED = ""
         PENDING = ""
         RUNNING = ""
         SUCCESS = ""
@@ -217,6 +222,7 @@ class PipelineList(Widget):
 
 class PipelineManager(App):
     pipelines: reactive[list[Pipeline]] = reactive([])
+    worker_last_update = 0.0
 
     def _wrap_pipelines(self, pipelines: Pipelines) -> list[Pipeline]:
         self.log.info("Wrapping pipelines")
@@ -251,11 +257,32 @@ class PipelineManager(App):
 
         return wrapped_pipelines
 
-    def on_mount(self) -> None:
+    @work(exclusive=True, thread=True, name="Pipeline Updatetor")
+    def start_pipeline_updator(self) -> None:
+        self.log.info(f"Pipeline updator thread started")
+
         project = get_current_project()
         self.pipelines = self._wrap_pipelines(get_pipelines(project))
 
         self.query_one(PipelineList).update_pipeline_list(self.pipelines)
+        self.worker_last_update = time.time()
+
+        while True:
+            elapsed = time.time() - self.worker_last_update
+            self.log.info(f"Elapsed: {elapsed}")
+
+            if elapsed < 2:
+                time.sleep(0.5)
+                continue
+
+            self.log.info("Updating!")
+            self.pipelines = self._wrap_pipelines(get_pipelines(project))
+
+            self.query_one(PipelineList).update_pipeline_list(self.pipelines)
+            self.worker_last_update = time.time()
+
+    def on_mount(self) -> None:
+        self.start_pipeline_updator()
 
     def compose(self) -> ComposeResult:
         yield PipelineList(self.pipelines)
