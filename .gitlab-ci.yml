@@ -1,0 +1,7 @@
+include:
+  - project: "gitlab/default-pipelines"
+    file: "/gitlab-ci/PyPi.gitlab-ci.yml"
+
+variables:
+  INTERNAL: "true"
+  PROJECT_NAME: "pipline_manager"
