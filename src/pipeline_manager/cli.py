@@ -54,6 +54,8 @@ class PipelineListItem(Widget):
     """
 
     class Text(Enum):
+        PENDING = "Pending"
+        RUNNING = "Running"
         SUCCESS = "Passed"
         WARNING = "Warning"
         FAILED = "Failed"
@@ -61,6 +63,8 @@ class PipelineListItem(Widget):
         MANUAL = "Manual"
 
     class Colors(Enum):
+        PENDING = "#6F3A0C"
+        RUNNING = "#154584"
         SUCCESS = "#0C522C"
         WARNING = "#6F3A0C"
         FAILED = "#8C1E0D"
@@ -70,6 +74,8 @@ class PipelineListItem(Widget):
         TEXT = "#AAAAAA"
 
     class Icons(Enum):
+        PENDING = ""
+        RUNNING = ""
         SUCCESS = ""
         WARNING = ""
         FAILED = ""
