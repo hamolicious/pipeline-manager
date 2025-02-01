@@ -5,8 +5,3 @@ include:
 variables:
   INTERNAL: "true"
   PROJECT_NAME: "pipline_manager"
-
-test:
-  allow_failure: true
-  script:
-    - docker info
