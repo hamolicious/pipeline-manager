@@ -176,6 +176,12 @@ class PipelineListItem(Widget):
                             self.Colors.TEXT.value,
                             self.Colors.GENERIC.value,
                         ),
+                        self.pill(
+                            self.commit.author_name,
+                            None,
+                            self.Colors.TEXT.value,
+                            self.Colors.GENERIC.value,
+                        ),
                     ]
                     yield Label("  ".join(sections))
 
