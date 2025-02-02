@@ -1,11 +1,13 @@
-# launch_project
+# pipeline-manager
 
-Launch tmux sessions and automatically rename the session and start vim.
+View and cotroll pipelines within the CLI! For fun: made to look the same as Gitlab's web-ui!
+
+![pipeline list screenshot](./screenshots/pipeline-list.png)
 
 ## Installation
 
 ````bash
-pipx install tmux-launch-project --index-url https://__token__:$GITLAB_TOKEN@gitlab.slayhouse.net/api/v4/projects/75/packages/pypi/simple```
+pipx install pipeline-manager --index-url https://__token__:$GITLAB_TOKEN@gitlab.slayhouse.net/api/v4/projects/76/packages/pypi/simple```
 ````
 
 ## Usage
