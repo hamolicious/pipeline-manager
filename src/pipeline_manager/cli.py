@@ -131,7 +131,14 @@ class PipelineListItem(Widget):
         disabled: bool = False,
     ) -> None:
         super().__init__(name=name, id=id, classes=classes, disabled=disabled)
+
+        project = get_current_project()
         self.pipeline = pipeline
+        self.commit = project.commits.get(self.pipeline.sha)
+
+    def on_mount(self):
+        self.log.info("Commit Message JSON:")
+        self.log.info(self.commit.to_json())
 
     def compose(self) -> ComposeResult:
         if self.pipeline is None:
@@ -145,7 +152,6 @@ class PipelineListItem(Widget):
                         - arrow.get(self.pipeline.created_at)
                     ).split(".")[0]
 
-                    # display_elapsed = arrow.Arrow.humanize(elapsed)
                     yield Label(self.pipeline_pill(self.pipeline.status.upper()))
                     yield Label(f"{self.Icons.ELAPSED.value} {elapsed}")
 
@@ -154,7 +160,7 @@ class PipelineListItem(Widget):
                     yield Label(f"{self.Icons.CALENDAR.value} {display_date}")
 
                 with Container(classes="pipeline-line"):
-                    yield Label("Update .gitlab-ci.yml file")
+                    yield Label(self.commit.title)
 
                     sections = [
                         f"[blue]#{self.pipeline.id}[/blue]",
