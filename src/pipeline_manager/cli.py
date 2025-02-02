@@ -90,6 +90,7 @@ class PipelineListItem(Widget):
         ELAPSED = ""
         BRANCH = ""
         COMMIT = ""
+        USER = ""
 
     pipeline: reactive[Pipeline | None] = reactive(None, recompose=True)
 
@@ -178,7 +179,7 @@ class PipelineListItem(Widget):
                         ),
                         self.pill(
                             self.commit.author_name,
-                            None,
+                            self.Icons.USER.value,
                             self.Colors.TEXT.value,
                             self.Colors.GENERIC.value,
                         ),
