@@ -8,7 +8,6 @@ from gitlab.base import RESTObject, RESTObjectList
 from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import Center, Container, Horizontal, Vertical, VerticalScroll
-from textual.events import Timer
 from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Label, Rule
@@ -136,10 +135,7 @@ class PipelineListItem(Widget):
         project = get_current_project()
         self.pipeline = pipeline
         self.commit = project.commits.get(self.pipeline.sha)
-
-    def on_mount(self):
-        self.log.info("Commit Message JSON:")
-        self.log.info(self.commit.to_json())
+        self.jobs = project.jobs.list(get_all=False)
 
     def compose(self) -> ComposeResult:
         if self.pipeline is None:
@@ -236,6 +232,7 @@ class PipelineList(Widget):
 class PipelineManager(App):
     pipelines: reactive[list[Pipeline]] = reactive([])
     worker_last_update = 0.0
+    REQUEST_INTERVAL_SEC = 3
 
     def _wrap_pipelines(self, pipelines: Pipelines) -> list[Pipeline]:
         self.log.info("Wrapping pipelines")
@@ -243,11 +240,6 @@ class PipelineManager(App):
         is_first = True
 
         for p in pipelines:
-            self.log.info(f"Transforming raw pipeline to internal pipeline")
-            self.log.info(p.asdict())
-
-            self.log.info("->")
-
             new_pipeline = Pipeline(
                 id=p.id,
                 iid=p.iid,
@@ -262,10 +254,8 @@ class PipelineManager(App):
                 name=p.name,
                 is_latest=is_first,
             )
-            self.log.info(new_pipeline)
 
             wrapped_pipelines.append(new_pipeline)
-
             is_first = False
 
         return wrapped_pipelines
@@ -284,7 +274,7 @@ class PipelineManager(App):
             elapsed = time.time() - self.worker_last_update
             self.log.info(f"Elapsed: {elapsed}")
 
-            if elapsed < 2:
+            if elapsed < self.REQUEST_INTERVAL_SEC:
                 time.sleep(0.5)
                 continue
 
