@@ -51,7 +51,9 @@ class PipelineListItem(Widget):
         project = get_current_project()
         self.pipeline = pipeline
         self.commit = raw_commit_to_commit(project.commits.get(self.pipeline.sha))
-        self.jobs = raw_jobs_to_jobs(project.jobs.list(get_all=False))
+        self.jobs = raw_jobs_to_jobs(
+            project.pipelines.get(pipeline.id).jobs.list(get_all=False)
+        )
 
     def compose(self) -> ComposeResult:
         if self.pipeline is None:
@@ -69,6 +71,6 @@ class PipelineListItem(Widget):
                     ...
 
                 with Container(classes="pipeline-line"):
-                    yield PipelineJobsPreview(self.jobs, self.pipeline.id)
+                    yield PipelineJobsPreview(self.jobs)
 
             yield Rule()

@@ -1,4 +1,17 @@
-from enum import Enum
+from enum import Enum, IntEnum, auto
+
+
+# allows for > and < assertions :D
+class StatusHierarchy(IntEnum):
+    CREATED = auto()
+    PENDING = auto()
+    RUNNING = auto()
+    SUCCESS = auto()
+    WARNING = auto()
+    FAILED = auto()
+    SKIPPED = auto()
+    MANUAL = auto()
+    CANCELED = auto()
 
 
 class Text(Enum):
@@ -10,6 +23,7 @@ class Text(Enum):
     FAILED = "Failed"
     SKIPPED = "Skipped"
     MANUAL = "Manual"
+    CANCELED = "Cancelled"
 
 
 class Colors(Enum):
@@ -23,6 +37,7 @@ class Colors(Enum):
     MANUAL = "#333238"
     GENERIC = "#323232"
     TEXT = "#AAAAAA"
+    CANCELED = "#333238"
 
 
 class Icons(Enum):
@@ -34,6 +49,7 @@ class Icons(Enum):
     FAILED = ""
     SKIPPED = ""
     MANUAL = ""
+    CANCELED = ""
     CALENDAR = ""
     ELAPSED = ""
     BRANCH = ""

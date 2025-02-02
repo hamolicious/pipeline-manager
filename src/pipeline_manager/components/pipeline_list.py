@@ -3,8 +3,7 @@ from textual.containers import VerticalScroll
 from textual.reactive import reactive
 from textual.widget import Widget
 
-from pipeline_manager.components.pipeline_list_item import PipelineListItem
-
+from ..components.pipeline_list_item import PipelineListItem
 from ..data import Pipeline
 
 
