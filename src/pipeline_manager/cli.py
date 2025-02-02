@@ -1,9 +1,6 @@
 import time
-from dataclasses import dataclass
-from enum import Enum
 from typing import List, TypeAlias
 
-import arrow
 from gitlab.base import RESTObject, RESTObjectList
 from textual import work
 from textual.app import App, ComposeResult
@@ -12,24 +9,10 @@ from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Label, Rule
 
+from .components.pills import Colors, Icons, build_pill, build_pipeline_pill
+from .components.pipeline_timings import PipelineTimings
+from .data import Pipeline
 from .gitlab_api import get_current_project, get_pipelines
-
-
-@dataclass
-class Pipeline:
-    id: int
-    iid: int
-    project_id: int
-    sha: str
-    ref: str
-    status: str
-    source: str
-    created_at: str
-    updated_at: str
-    web_url: str
-    name: str
-    is_latest: bool
-
 
 Pipelines: TypeAlias = RESTObjectList | List[RESTObject]
 
@@ -53,74 +36,7 @@ class PipelineListItem(Widget):
             padding-left: 2;
         }
     """
-
-    class Text(Enum):
-        CREATED = "Created"
-        PENDING = "Pending"
-        RUNNING = "Running"
-        SUCCESS = "Passed"
-        WARNING = "Warning"
-        FAILED = "Failed"
-        SKIPPED = "Skipped"
-        MANUAL = "Manual"
-
-    class Colors(Enum):
-        CREATED = "#333238"
-        PENDING = "#6F3A0C"
-        RUNNING = "#154584"
-        SUCCESS = "#0C522C"
-        WARNING = "#6F3A0C"
-        FAILED = "#8C1E0D"
-        SKIPPED = "#333238"
-        MANUAL = "#333238"
-        GENERIC = "#323232"
-        TEXT = "#AAAAAA"
-
-    class Icons(Enum):
-        CREATED = ""
-        PENDING = ""
-        RUNNING = ""
-        SUCCESS = ""
-        WARNING = ""
-        FAILED = ""
-        SKIPPED = ""
-        MANUAL = ""
-        CALENDAR = ""
-        ELAPSED = ""
-        BRANCH = ""
-        COMMIT = ""
-        USER = ""
-
     pipeline: reactive[Pipeline | None] = reactive(None, recompose=True)
-
-    @classmethod
-    def pill(
-        cls,
-        text: str | None,
-        icon: str | None,
-        fg_color: str = "black",
-        bg_color: str = "green",
-    ) -> str:
-        color = f"{fg_color} on {bg_color}"
-        left_side = f"[{bg_color}][/{bg_color}]"
-        right_side = f"[{bg_color}][/{bg_color}]"
-        icon = f"{icon} " if icon is not None else ""
-
-        if text is None:
-            text = ""
-            icon = icon[:-1:]
-
-        return f"{left_side}[{color}]{icon}{text}[/{color}]{right_side}"
-
-    def pipeline_pill(self, state: str, no_text: bool = False) -> str:
-        state = state.upper()
-
-        return self.pill(
-            (self.Text[state].value if no_text is False else None),
-            self.Icons[state].value,
-            "white",
-            self.Colors[state].value,
-        )
 
     def __init__(
         self,
@@ -144,48 +60,41 @@ class PipelineListItem(Widget):
         with Vertical():
             with Horizontal():
                 with Container(classes="pipeline-line"):
-                    elapsed = str(
-                        arrow.get(self.pipeline.updated_at)
-                        - arrow.get(self.pipeline.created_at)
-                    ).split(".")[0]
-
-                    yield Label(self.pipeline_pill(self.pipeline.status.upper()))
-                    yield Label(f"{self.Icons.ELAPSED.value} {elapsed}")
-
-                    date = arrow.get(self.pipeline.updated_at)
-                    display_date = arrow.Arrow.humanize(date)
-                    yield Label(f"{self.Icons.CALENDAR.value} {display_date}")
+                    yield PipelineTimings(self.pipeline)
 
                 with Container(classes="pipeline-line"):
                     yield Label(self.commit.title)
 
                     sections = [
                         f"[blue]#{self.pipeline.id}[/blue]",
-                        self.pill(
+                        build_pill(
                             self.pipeline.ref,
-                            self.Icons.BRANCH.value,
-                            self.Colors.TEXT.value,
-                            self.Colors.GENERIC.value,
+                            icon=Icons.BRANCH.value,
+                            text_color=Colors.TEXT.value,
+                            pill_color=Colors.GENERIC.value,
                         ),
-                        self.pill(
+                        build_pill(
                             self.pipeline.sha[:8:],
-                            self.Icons.COMMIT.value,
-                            self.Colors.TEXT.value,
-                            self.Colors.GENERIC.value,
+                            icon=Icons.COMMIT.value,
+                            text_color=Colors.TEXT.value,
+                            pill_color=Colors.GENERIC.value,
                         ),
-                        self.pill(
+                        build_pill(
                             self.commit.author_name,
-                            self.Icons.USER.value,
-                            self.Colors.TEXT.value,
-                            self.Colors.GENERIC.value,
+                            icon=Icons.USER.value,
+                            text_color=Colors.TEXT.value,
+                            pill_color=Colors.GENERIC.value,
                         ),
                     ]
                     yield Label("  ".join(sections))
 
                     if self.pipeline.is_latest:
                         yield Label(
-                            self.pill(
-                                "latest", None, "white", self.Colors.SUCCESS.value
+                            build_pill(
+                                "latest",
+                                icon=None,
+                                text_color="white",
+                                pill_color=Colors.SUCCESS.value,
                             )
                         )
 
@@ -196,11 +105,11 @@ class PipelineListItem(Widget):
                     with Center():
                         with Horizontal():
                             yield Label(
-                                self.pipeline_pill(self.pipeline.status, no_text=True)
+                                build_pipeline_pill(self.pipeline.status, no_text=True)
                             )
                             yield Label("[bold]-[/bold]")
                             yield Label(
-                                self.pipeline_pill(self.pipeline.status, no_text=True)
+                                build_pipeline_pill(self.pipeline.status, no_text=True)
                             )
 
             yield Rule()
