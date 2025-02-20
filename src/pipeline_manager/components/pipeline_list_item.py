@@ -10,6 +10,7 @@ from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Label, Rule
 
+from ..components.pipeline_author import PipelineAuthor
 from ..components.pipeline_info import PipelineInfo
 from ..components.pipeline_jobs_preview import PipelineJobsPreview
 from ..components.pipeline_timings import PipelineTimings
@@ -81,7 +82,8 @@ class PipelineListItem(Widget):
                     yield PipelineInfo(self.pipeline, self.commit)
 
                 with Container(classes="pipeline-line"):
-                    ...
+                    self.log.debug(self.pipeline, self.commit)
+                    yield PipelineAuthor()
 
                 with Container(classes="pipeline-line"):
                     yield PipelineJobsPreview(self.jobs)
@@ -103,7 +105,7 @@ class SkeletonPipelineListItem(Widget):
                     yield self.generate_label()
 
                 with Container(classes="pipeline-line"):
-                    ...
+                    yield self.generate_label()
 
                 with Container(classes="pipeline-line"):
                     yield self.generate_label()
