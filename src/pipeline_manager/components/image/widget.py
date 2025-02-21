@@ -106,7 +106,7 @@ class Image(Widget):
 
     @work(thread=True)
     async def render_image(self) -> None:
-        path = "temp-adf8ad7fya807fta08dfga0dgfa"
+        path = f"temp-{random.randint(1000, 100000)}"
         temp_file: Any = open(path, "wb")
 
         try:
@@ -123,13 +123,12 @@ class Image(Widget):
 
             self.canvas = await self.build_canvas()
 
-            os.remove(path)
-
         except Exception as e:
             self.log.error(e)
 
         finally:
             temp_file.close()
+            os.remove(path)
 
     def compose(self) -> ComposeResult:
         with Container():
