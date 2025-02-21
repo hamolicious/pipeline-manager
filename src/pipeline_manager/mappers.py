@@ -10,11 +10,11 @@ Pipelines: TypeAlias = RESTObjectList | List[RESTObject]
 
 def raw_pipeline_to_pipeline(pipelines: Pipelines) -> list[Pipeline]:
     wrapped_pipelines = []
-    latest_commit: str | None = None
+    latest_commit_per_branch: dict[str, str | None] = {}
 
     for p in pipelines:
-        if latest_commit is None:
-            latest_commit = p.sha
+        if latest_commit_per_branch.get(p.ref) is None:
+            latest_commit_per_branch[p.ref] = p.sha
 
         new_pipeline = Pipeline(
             id=p.id,
@@ -28,7 +28,7 @@ def raw_pipeline_to_pipeline(pipelines: Pipelines) -> list[Pipeline]:
             updated_at=p.updated_at,
             web_url=p.web_url,
             name=p.name,
-            is_latest=p.sha == latest_commit,
+            is_latest=p.sha == latest_commit_per_branch.get(p.ref),
         )
 
         wrapped_pipelines.append(new_pipeline)
