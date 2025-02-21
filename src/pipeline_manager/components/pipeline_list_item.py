@@ -83,7 +83,7 @@ class PipelineListItem(Widget):
 
                 with Container(classes="pipeline-line"):
                     self.log.debug(self.pipeline, self.commit)
-                    yield PipelineAuthor()
+                    yield PipelineAuthor(self.commit)
 
                 with Container(classes="pipeline-line"):
                     yield PipelineJobsPreview(self.jobs)

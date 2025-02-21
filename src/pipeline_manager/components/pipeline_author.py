@@ -6,24 +6,25 @@ from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Label
 
+from ..components.image import Image
 from ..components.pills import Icons, build_pipeline_pill
-from ..data import Pipeline
+from ..data import Commit, Pipeline
+from ..gitlab_api import login
 
 
 class PipelineAuthor(Widget):
     DEFAULT_CSS = """
         PipelineAuthor {
-            width: 100%;
+            width: 7;
             height: 7;
             padding: 0;
             margin: 0;
         }
     """
 
-    canvas = reactive("", recompose=True, repaint=True)
-
     def __init__(
         self,
+        commit: Commit,
         name: str | None = None,
         id: str | None = None,
         classes: str | None = None,
@@ -31,26 +32,11 @@ class PipelineAuthor(Widget):
     ) -> None:
         super().__init__(name=name, id=id, classes=classes, disabled=disabled)
 
-        self.canvas = ""
-        self.canvas_width = 6
-        self.canvas_height = 6
+        self.commit = commit
+        gl = login()
 
-        self.update()
-
-    def _make_pixel(self, top_color: str, bottom_color: str) -> str:
-        pixel = "▀"
-        return f"[{top_color} on {bottom_color}]{pixel}[/{top_color} on {bottom_color}]"
-
-    def update(self):
-        self.canvas = ""
-        for _ in range(int(self.canvas_height / 2)):
-            for _ in range(self.canvas_width):
-                self.canvas += self._make_pixel(
-                    random.choice(["red", "blue", "green"]),
-                    random.choice(["red", "blue", "green"]),
-                )
-
-            self.canvas += "\n"
+        self.user = list(gl.users.list(username=self.commit.author_name))[0]
+        self.log.debug(self.user.avatar_url)
 
     def compose(self) -> ComposeResult:
-        yield Label(self.canvas)
+        yield Image(self.user.avatar_url, 6, 6)
